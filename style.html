@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Burger King - Расписание сотрудников</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #ec1c24;
+            --secondary-color: #fdbd10;
+            --dark-color: #27251f;
+            --light-color: #f8f8f8;
+            --success-color: #4caf50;
+            --warning-color: #ff9800;
+            --danger-color: #f44336;
+            --border-color: #ddd;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background-color: var(--light-color);
+            color: var(--dark-color);
+        }
+
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: var(--light-color);
+        }
+
+        .login-form {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-form .logo {
+            width: 150px;
+            margin-bottom: 1.5rem;
+        }
+
+        .login-form h2 {
+            margin-bottom: 1.5rem;
+            color: var(--dark-color);
+        }
+
+        .input-group {
+            margin-bottom: 1rem;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background-color 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        button:hover {
+            background-color: #c5161c;
+        }
+
+        .error-message {
+            color: var(--danger-color);
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .app-container {
+            display: none; /* Initially hidden */
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .header-left .logo {
+            height: 40px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        #logout-btn {
+            background-color: var(--dark-color);
+        }
+
+        #logout-btn:hover {
+            background-color: #3a3833;
+        }
+
+        main {
+            flex: 1;
+            padding: 2rem;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .week-selector {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .week-selector button {
+            padding: 0.5rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        #add-employee-btn {
+            background-color: var(--success-color);
+        }
+
+        #add-employee-btn:hover {
+            background-color: #3d8b40;
+        }
+        
+        #clear-all-data-btn {
+            background-color: var(--danger-color);
+        }
+        #clear-all-data-btn:hover {
+            background-color: #d32f2f;
+        }
+
+        #export-excel-btn {
+            background-color: var(--secondary-color);
+            color: var(--dark-color);
+        }
+
+        #export-excel-btn:hover {
+            background-color: #e6ac0e;
+        }
+
+        .schedule-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .days-header {
+            display: grid;
+            grid-template-columns: 200px repeat(7, 1fr);
+            background-color: var(--dark-color);
+            color: white;
+            font-weight: 500;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .days-header .day,
+        .days-header .position-header {
+            padding: 1rem;
+            text-align: center;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .days-header .day:last-child, .days-header .position-header:last-child {
+            border-right: none;
+        }
+
+
+        .days-header .position-header {
+            text-align: left;
+        }
+
+        .positions-container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .position-block {
+            border-bottom: 1px solid var(--border-color);
+        }
+        .position-block:last-child {
+            border-bottom: none;
+        }
+
+
+        .position-title {
+            background-color: #f5f5f5;
+            padding: 0.75rem 1rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .employees-list {
+            display: grid;
+            grid-template-columns: 200px repeat(7, 1fr);
+        }
+
+        .employee-name {
+            padding: 0.75rem 1rem;
+            border-right: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 50px; 
+        }
+        .employee-name:last-child {
+             border-bottom: none;
+        }
+
+
+        .shift-cell {
+            padding: 0.75rem;
+            border-right: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            min-height: 50px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column; /* For inline editing */
+            gap: 0.25rem; /* Space between inputs/buttons */
+        }
+        .shift-cell input[type="time"] {
+            width: 80px;
+            padding: 0.25rem;
+            font-size: 0.8rem;
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+        }
+        .shift-cell .inline-edit-buttons button {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            min-width: 30px;
+            margin-left: 0.25rem;
+        }
+
+
+        .employees-list .shift-cell:last-child {
+             border-right: none;
+        }
+        
+        .employees-list > .employee-name:nth-last-child(-n+8) ~ .shift-cell,
+        .employees-list > .employee-name:nth-last-child(1) {
+            border-bottom: none;
+        }
+
+
+        .shift-cell:hover {
+            background-color: rgba(0, 0, 0, 0.03);
+        }
+
+        .shift-cell.has-shift {
+            background-color: rgba(76, 175, 80, 0.15); 
+        }
+
+        .shift-time {
+            font-size: 0.85rem;
+            color: var(--dark-color);
+            font-weight: 500;
+        }
+
+        .delete-employee {
+            cursor: pointer;
+            color: var(--danger-color);
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        .delete-employee:hover {
+            opacity: 1;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #777;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        .shift-form-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1rem;
+        }
+        #clear-shift-btn {
+            background-color: var(--warning-color);
+            color: var(--dark-color);
+        }
+         #clear-shift-btn:hover {
+            background-color: #e68a00;
+        }
+
+
+        @media (max-width: 1200px) {
+            .days-header,
+            .employees-list {
+                grid-template-columns: 150px repeat(7, 1fr);
+            }
+        }
+
+        @media (max-width: 992px) {
+            .schedule-container {
+                overflow-x: auto;
+            }
+            
+            .days-header,
+            .employees-list {
+                min-width: 1000px; 
+            }
+             main {
+                padding: 1rem;
+            }
+            .controls {
+                margin-bottom: 1rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+            }
+            
+            .week-selector,
+            .action-buttons {
+                width: 100%;
+                justify-content: space-between; 
+            }
+            .action-buttons button {
+                flex-grow: 1; 
+            }
+            
+            .modal-content {
+                padding: 1.5rem;
+                margin: 1rem;
+            }
+            header {
+                padding: 0.75rem 1rem;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            .header-right {
+                width: 100%;
+                justify-content: space-between;
+            }
+             .shift-cell input[type="time"] {
+                width: 70px; /* Adjust for smaller screens */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container" id="login-container">
+        <div class="login-form">
+            <img src="/фото/Burger_King_1994_logo.svg.png" alt="Burger King Logo" class="logo" data-ai-hint="logo brand">
+            <h2>Вход в систему</h2>
+            <div class="input-group">
+                <label for="restaurant">Ресторан</label>
+                <select id="restaurant">
+                    <option value="" disabled selected>Выберите ресторан</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="username">Логин</label>
+                <input type="text" id="username" placeholder="Введите логин">
+            </div>
+            <div class="input-group">
+                <label for="password">Пароль</label>
+                <input type="password" id="password" placeholder="Введите пароль">
+            </div>
+            <button id="login-btn">Войти</button>
+            <div class="error-message" id="login-error"></div>
+        </div>
+    </div>
+
+    <div class="app-container" id="app-container">
+        <header>
+            <div class="header-left">
+                <img src="/фото/Burger_King_1994_logo.svg.png" alt="Burger King Logo" class="logo" data-ai-hint="logo brand">
+                <h1>Расписание сотрудников</h1>
+            </div>
+            <div class="header-right">
+                <span id="current-restaurant"></span>
+                <button id="logout-btn"><i class="fas fa-sign-out-alt"></i> Выйти</button>
+            </div>
+        </header>
+
+        <main>
+            <div class="controls">
+                <div class="week-selector">
+                    <button id="prev-week"><i class="fas fa-chevron-left"></i></button>
+                    <span id="week-range"></span>
+                    <button id="next-week"><i class="fas fa-chevron-right"></i></button>
+                </div>
+                <div class="action-buttons">
+                    <button id="add-employee-btn"><i class="fas fa-user-plus"></i> Добавить сотрудника</button>
+                    <button id="export-excel-btn"><i class="fas fa-file-excel"></i> Экспорт в Excel</button>
+                    <button id="clear-all-data-btn"><i class="fas fa-trash"></i> Очистить все</button>
+                </div>
+            </div>
+
+            <div class="schedule-container">
+                <div class="days-header">
+                    <div class="position-header">Должность</div>
+                    <div class="day">Понедельник</div>
+                    <div class="day">Вторник</div>
+                    <div class="day">Среда</div>
+                    <div class="day">Четверг</div>
+                    <div class="day">Пятница</div>
+                    <div class="day">Суббота</div>
+                    <div class="day">Воскресенье</div>
+                </div>
+
+                <div class="positions-container" id="positions-container">
+                </div>
+            </div>
+        </main>
+
+        <div class="modal" id="employee-modal">
+            <div class="modal-content">
+                <span class="close-btn">&times;</span>
+                <h2>Добавить сотрудника</h2>
+                <form id="employee-form">
+                    <div class="form-group">
+                        <label for="employee-name">Имя сотрудника</label>
+                        <input type="text" id="employee-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="employee-position">Должность</label>
+                        <select id="employee-position" required>
+                        </select>
+                    </div>
+                    <button type="submit">Добавить</button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const config = {
+                restaurants: {
+                    "9037-MSK": { 
+                        id: "9037-MSK",
+                        name: "9037-МСК, пл. Комсомольская 2А", 
+                        login: "BK9037", 
+                        password: "admin123"
+                    },
+                    "1001-SPB": { 
+                        id: "1001-SPB",
+                        name: "9040-СПБ, Московский вокзал", 
+                        login: "BK9040", 
+                        password: "admin123" 
+                    },
+                    "2002-EKB": { 
+                        id: "2002-EKB",
+                        name: "9041-СПБ, Финляндский вокзал", 
+                        login: "BK9041", 
+                        password: "admin123" 
+                    },
+                    "3003-KZN": { 
+                        id: "3003-KZN",
+                        name: "9044-МСК, Ярославский вокзал", 
+                        login: "BK9044", 
+                        password: "admin123" 
+                    }
+                },
+                positions: [
+                    { id: "cook", name: "Повар", color: "#FFEB3B" },
+                    { id: "cashier", name: "Прилавок", color: "#4CAF50" },
+                    { id: "hall", name: "Работник зала", color: "#2196F3" },
+                    { id: "trainee", name: "Обучение ЧБР", color: "#9C27B0" },
+                    { id: "night", name: "Ночная смена", color: "#607D8B" }
+                ],
+                days: ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"],
+                shortDays: ["ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ", "ВС"]
+            };
+
+            let state = {
+                currentRestaurantId: null,
+                currentWeek: getCurrentWeek(),
+                employees: [],
+                shifts: []
+            };
+            
+            let currentlyEditingCell = null; // Track the cell being edited
+
+            const loginContainer = document.getElementById('login-container');
+            const appContainer = document.getElementById('app-container');
+            const loginBtn = document.getElementById('login-btn');
+            const logoutBtn = document.getElementById('logout-btn');
+            const restaurantSelect = document.getElementById('restaurant');
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const loginError = document.getElementById('login-error');
+            const currentRestaurantSpan = document.getElementById('current-restaurant');
+            const weekRangeSpan = document.getElementById('week-range');
+            const prevWeekBtn = document.getElementById('prev-week');
+            const nextWeekBtn = document.getElementById('next-week');
+            const addEmployeeBtn = document.getElementById('add-employee-btn');
+            const exportExcelBtn = document.getElementById('export-excel-btn');
+            const clearAllDataBtn = document.getElementById('clear-all-data-btn');
+            const positionsContainer = document.getElementById('positions-container');
+            const employeeModal = document.getElementById('employee-modal');
+            const employeeForm = document.getElementById('employee-form');
+            const employeePositionSelect = document.getElementById('employee-position');
+           
+            init();
+
+            function populateRestaurantOptions() {
+                restaurantSelect.innerHTML = '<option value="" disabled selected>Выберите ресторан</option>';
+                const savedRestaurantId = localStorage.getItem('bkScheduleRestaurantId_lastSelected');
+                for (const id in config.restaurants) {
+                    const option = document.createElement('option');
+                    option.value = id;
+                    option.textContent = config.restaurants[id].name;
+                    if (id === savedRestaurantId) {
+                        option.selected = true;
+                    }
+                    restaurantSelect.appendChild(option);
+                }
+            }
+
+            function populatePositionOptions() {
+                employeePositionSelect.innerHTML = '';
+                 config.positions.forEach(pos => {
+                    const option = document.createElement('option');
+                    option.value = pos.id;
+                    option.textContent = pos.name;
+                    employeePositionSelect.appendChild(option);
+                });
+            }
+
+
+            function init() {
+                populateRestaurantOptions();
+                populatePositionOptions();
+
+                // Always show login form on init
+                loginContainer.style.display = 'flex';
+                appContainer.style.display = 'none';
+                
+                setupEventListeners();
+            }
+
+
+            function setupEventListeners() {
+                loginBtn.addEventListener('click', handleLogin);
+                logoutBtn.addEventListener('click', handleLogout);
+                
+                prevWeekBtn.addEventListener('click', () => {
+                    state.currentWeek = getPreviousWeek(state.currentWeek.start);
+                    renderWeekRange();
+                    renderSchedule();
+                    saveState(); 
+                });
+                
+                nextWeekBtn.addEventListener('click', () => {
+                    state.currentWeek = getNextWeek(state.currentWeek.start);
+                    renderWeekRange();
+                    renderSchedule();
+                    saveState();
+                });
+                
+                addEmployeeBtn.addEventListener('click', () => {
+                    document.getElementById('employee-name').value = '';
+                    if (config.positions.length > 0) {
+                        employeePositionSelect.value = config.positions[0].id;
+                    }
+                    employeeModal.style.display = 'flex';
+                });
+                
+                exportExcelBtn.addEventListener('click', exportToExcel);
+                clearAllDataBtn.addEventListener('click', handleClearAllData);
+                
+                employeeForm.addEventListener('submit', handleAddEmployee);
+                
+                document.querySelectorAll('.close-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        this.closest('.modal').style.display = 'none';
+                    });
+                });
+                
+                window.addEventListener('click', function(event) {
+                    if (event.target === employeeModal) employeeModal.style.display = 'none';
+                });
+                 // Global click listener to close inline editor if clicked outside
+                document.body.addEventListener('click', function(event) {
+                    if (currentlyEditingCell && !currentlyEditingCell.contains(event.target)) {
+                        renderSchedule(); // Re-render to close editor
+                        currentlyEditingCell = null;
+                    }
+                }, true); // Use capture phase
+            }
+
+            function handleLogin() {
+                const restaurantId = restaurantSelect.value;
+                const username = usernameInput.value.trim();
+                const password = passwordInput.value;
+                
+                loginError.textContent = '';
+                if (!restaurantId || !username || !password) {
+                    loginError.textContent = 'Пожалуйста, заполните все поля';
+                    return;
+                }
+                
+                const restaurant = config.restaurants[restaurantId];
+                
+                if (restaurant && username === restaurant.login && password === restaurant.password) {
+                    state.currentRestaurantId = restaurantId;
+                    localStorage.setItem('bkScheduleRestaurantId_lastSelected', restaurantId); // Store for pre-selection next time
+                    currentRestaurantSpan.textContent = restaurant.name;
+                    
+                    loadRestaurantSpecificState(); 
+                    
+                    loginContainer.style.display = 'none';
+                    appContainer.style.display = 'flex';
+                    renderWeekRange();
+                    renderSchedule();
+                    
+                    usernameInput.value = '';
+                    passwordInput.value = '';
+                } else {
+                    loginError.textContent = 'Неверный логин или пароль';
+                }
+            }
+            
+            function loadRestaurantSpecificState() {
+                const savedStateRaw = localStorage.getItem(`bkScheduleState_${state.currentRestaurantId}`);
+                if (savedStateRaw) {
+                    try {
+                        const parsedState = JSON.parse(savedStateRaw);
+                        state.employees = parsedState.employees || [];
+                        state.shifts = parsedState.shifts || [];
+                        if (parsedState.currentWeek && parsedState.currentWeek.start && parsedState.currentWeek.end) {
+                            state.currentWeek = {
+                                start: new Date(parsedState.currentWeek.start),
+                                end: new Date(parsedState.currentWeek.end),
+                                weekNumber: parsedState.currentWeek.weekNumber,
+                                year: parsedState.currentWeek.year
+                            };
+                        } else {
+                            state.currentWeek = getCurrentWeek();
+                        }
+                    } catch (e) {
+                        console.error('Error parsing state for restaurant:', e);
+                        state.employees = [];
+                        state.shifts = [];
+                        state.currentWeek = getCurrentWeek();
+                    }
+                } else {
+                    state.employees = [];
+                    state.shifts = [];
+                    state.currentWeek = getCurrentWeek();
+                }
+            }
+
+
+            function handleLogout() {
+                if (confirm('Вы уверены, что хотите выйти?')) {
+                    state.currentRestaurantId = null;
+                    // localStorage.removeItem('bkScheduleRestaurantId_lastSelected'); // Keep last selected for convenience
+                    
+                    loginContainer.style.display = 'flex';
+                    appContainer.style.display = 'none';
+                    loginError.textContent = '';
+                    usernameInput.value = '';
+                    passwordInput.value = '';
+                    // Reset current week to avoid showing old week range on login screen
+                    state.currentWeek = getCurrentWeek(); 
+                }
+            }
+            
+            function handleClearAllData() {
+                if (confirm('Вы уверены, что хотите удалить всех сотрудников и все смены для этого ресторана? Это действие нельзя отменить.')) {
+                    state.employees = [];
+                    state.shifts = [];
+                    saveState();
+                    renderSchedule();
+                    alert('Все данные для текущего ресторана очищены.');
+                }
+            }
+
+
+            function saveState() {
+                if (!state.currentRestaurantId) return;
+
+                const stateToSave = {
+                    employees: state.employees,
+                    shifts: state.shifts,
+                    currentWeek: {
+                        ...state.currentWeek,
+                        start: state.currentWeek.start.toISOString(),
+                        end: state.currentWeek.end.toISOString()
+                    }
+                };
+                localStorage.setItem(`bkScheduleState_${state.currentRestaurantId}`, JSON.stringify(stateToSave));
+            }
+
+
+            function renderWeekRange() {
+                if (appContainer.style.display === 'none') return; // Don't render if not logged in
+                const start = formatDate(state.currentWeek.start);
+                const end = formatDate(state.currentWeek.end);
+                weekRangeSpan.textContent = `${start} - ${end}`;
+            }
+
+            function renderSchedule() {
+                if (!state.currentRestaurantId) return; // Don't render if no restaurant selected
+                positionsContainer.innerHTML = '';
+                currentlyEditingCell = null; // Reset any inline edit state
+                
+                config.positions.forEach(position => {
+                    const positionBlock = document.createElement('div');
+                    positionBlock.className = 'position-block';
+                    
+                    const positionTitle = document.createElement('div');
+                    positionTitle.className = 'position-title';
+                    positionTitle.style.backgroundColor = position.color + '33'; 
+                    positionTitle.innerHTML = `<span>${position.name}</span>`;
+                    positionBlock.appendChild(positionTitle);
+                    
+                    const employeesList = document.createElement('div');
+                    employeesList.className = 'employees-list';
+                    
+                    const employeesInPosition = state.employees.filter(e => e.positionId === position.id);
+                    
+                    if (employeesInPosition.length > 0) {
+                        employeesInPosition.forEach(employee => {
+                            const employeeNameCell = document.createElement('div');
+                            employeeNameCell.className = 'employee-name';
+                            employeeNameCell.innerHTML = `
+                                <span>${employee.name}</span>
+                                <span class="delete-employee" data-id="${employee.id}" title="Удалить сотрудника"><i class="fas fa-trash-alt"></i></span>
+                            `;
+                            employeesList.appendChild(employeeNameCell);
+                            
+                            employeeNameCell.querySelector('.delete-employee').addEventListener('click', (e) => {
+                                e.stopPropagation();
+                                if (confirm(`Удалить сотрудника ${employee.name}? Все его/ее смены также будут удалены.`)) {
+                                    state.employees = state.employees.filter(emp => emp.id !== employee.id);
+                                    state.shifts = state.shifts.filter(s => s.employeeId !== employee.id);
+                                    saveState();
+                                    renderSchedule();
+                                }
+                            });
+                            
+                            for (let dayIdx = 0; dayIdx < 7; dayIdx++) {
+                                const shiftCell = document.createElement('div');
+                                shiftCell.className = 'shift-cell';
+                                shiftCell.dataset.employeeId = employee.id;
+                                shiftCell.dataset.dayIndex = dayIdx;
+                                
+                                const shift = state.shifts.find(s => 
+                                    s.employeeId === employee.id && 
+                                    s.weekNumber === state.currentWeek.weekNumber && 
+                                    s.year === state.currentWeek.year && 
+                                    s.dayIndex === dayIdx
+                                );
+                                
+                                if (shift) {
+                                    shiftCell.classList.add('has-shift');
+                                    shiftCell.innerHTML = `<div class="shift-time">${shift.start} - ${shift.end}</div>`;
+                                }
+                                
+                                shiftCell.addEventListener('click', (e) => {
+                                    e.stopPropagation(); // Prevent body click from closing immediately
+                                    if (currentlyEditingCell && currentlyEditingCell !== shiftCell) {
+                                        renderSchedule(); // Close previous editor
+                                    }
+                                    currentlyEditingCell = shiftCell;
+                                    renderInlineEditor(shiftCell, employee.id, dayIdx, shift);
+                                });
+                                employeesList.appendChild(shiftCell);
+                            }
+                        });
+                    } else {
+                        const emptyRowMessage = document.createElement('div');
+                        emptyRowMessage.textContent = 'Нет сотрудников на этой должности';
+                        emptyRowMessage.style.gridColumn = '1 / -1'; 
+                        emptyRowMessage.style.padding = '0.75rem 1rem';
+                        emptyRowMessage.style.textAlign = 'center';
+                        emptyRowMessage.style.color = '#777';
+                        emptyRowMessage.style.fontStyle = 'italic';
+                        emptyRowMessage.style.borderBottom = '1px solid var(--border-color)';
+                        if (employeesList.children.length === 0) { 
+                           emptyRowMessage.style.borderRight = 'none'; 
+                        }
+                        employeesList.appendChild(emptyRowMessage);
+                    }
+                    positionBlock.appendChild(employeesList);
+                    positionsContainer.appendChild(positionBlock);
+                });
+            }
+
+            function renderInlineEditor(cell, employeeId, dayIndex, existingShift) {
+                cell.innerHTML = ''; // Clear current content
+                cell.classList.remove('has-shift'); // Remove green background during edit
+
+                const startInput = document.createElement('input');
+                startInput.type = 'time';
+                startInput.value = existingShift ? existingShift.start : '';
+                startInput.addEventListener('click', e => e.stopPropagation()); // Prevent cell click
+
+                const endInput = document.createElement('input');
+                endInput.type = 'time';
+                endInput.value = existingShift ? existingShift.end : '';
+                endInput.addEventListener('click', e => e.stopPropagation());
+
+                const buttonContainer = document.createElement('div');
+                buttonContainer.className = 'inline-edit-buttons';
+
+                const okButton = document.createElement('button');
+                okButton.innerHTML = '<i class="fas fa-check"></i>';
+                okButton.style.backgroundColor = 'var(--success-color)';
+                okButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const start = startInput.value;
+                    const end = endInput.value;
+                    const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+
+                    if ((start && !end) || (!start && end)) {
+                         alert('Пожалуйста, укажите и время начала, и время окончания, или оставьте оба поля пустыми для очистки.');
+                         return;
+                    }
+
+                    if (start && end) {
+                        if (!timeRegex.test(start) || !timeRegex.test(end)) {
+                            alert('Пожалуйста, введите время в формате ЧЧ:ММ (например, 09:00 или 21:30).');
+                            return;
+                        }
+                        // Save or update shift
+                        state.shifts = state.shifts.filter(s => 
+                            !(s.employeeId === employeeId && 
+                              s.weekNumber === state.currentWeek.weekNumber && 
+                              s.year === state.currentWeek.year && 
+                              s.dayIndex === dayIndex)
+                        );
+                        state.shifts.push({ 
+                            id: existingShift ? existingShift.id : generateId(), 
+                            employeeId, 
+                            weekNumber: state.currentWeek.weekNumber, 
+                            year: state.currentWeek.year, 
+                            dayIndex, 
+                            start, 
+                            end 
+                        });
+                    } else { // Both are empty, clear the shift
+                         state.shifts = state.shifts.filter(s => 
+                            !(s.employeeId === employeeId && 
+                              s.weekNumber === state.currentWeek.weekNumber && 
+                              s.year === state.currentWeek.year && 
+                              s.dayIndex === dayIndex)
+                        );
+                    }
+                    saveState();
+                    renderSchedule(); // Re-render the whole schedule
+                    currentlyEditingCell = null;
+                });
+
+                const cancelButton = document.createElement('button');
+                cancelButton.innerHTML = '<i class="fas fa-times"></i>';
+                cancelButton.style.backgroundColor = 'var(--danger-color)';
+                cancelButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                     // If it was an existing shift and user cancels, or if they just want to clear, clear it
+                    if (existingShift || startInput.value || endInput.value) { // Only ask to clear if there was something to clear or being input
+                        if (confirm('Очистить эту смену? (Или отменить редактирование, если поля пусты)')) {
+                             state.shifts = state.shifts.filter(s => 
+                                !(s.employeeId === employeeId && 
+                                s.weekNumber === state.currentWeek.weekNumber && 
+                                s.year === state.currentWeek.year && 
+                                s.dayIndex === dayIndex)
+                            );
+                            saveState();
+                        }
+                    }
+                    renderSchedule();
+                    currentlyEditingCell = null;
+                });
+                
+                buttonContainer.appendChild(okButton);
+                buttonContainer.appendChild(cancelButton);
+
+                cell.appendChild(startInput);
+                cell.appendChild(endInput);
+                cell.appendChild(buttonContainer);
+                startInput.focus(); // Focus on the first input
+            }
+
+
+            function handleAddEmployee(e) {
+                e.preventDefault();
+                const name = document.getElementById('employee-name').value.trim();
+                const positionId = employeePositionSelect.value;
+                
+                if (!name || !positionId) {
+                    alert('Пожалуйста, заполните все поля.');
+                    return;
+                }
+                
+                state.employees.push({ id: generateId(), name, positionId });
+                saveState();
+                renderSchedule();
+                employeeModal.style.display = 'none';
+            }
+
+
+            function exportToExcel() {
+                const wb = XLSX.utils.book_new();
+                const thinBorder = { style: 'thin', color: { rgb: '000000' } };
+                const cellBorder = { top: thinBorder, bottom: thinBorder, left: thinBorder, right: thinBorder };
+                const headerFill = { fgColor: { rgb: 'E0E0E0' } }; // Light gray
+
+                config.days.forEach((dayName, dayIndex) => {
+                    const dayShifts = state.shifts.filter(s => 
+                        s.weekNumber === state.currentWeek.weekNumber && 
+                        s.year === state.currentWeek.year && 
+                        s.dayIndex === dayIndex
+                    );
+                    
+                    let data = [
+                        [`Расписание на ${dayName}`],
+                        ['Дата', formatDate(getDateForDayIndex(state.currentWeek, dayIndex))],
+                        [], 
+                        ['Должность', 'Сотрудник', 'Начало', 'Конец']
+                    ];
+                    
+                    config.positions.forEach(position => {
+                        data.push([position.name, '', '', '']); 
+                        const employeesInPosition = state.employees.filter(emp => emp.positionId === position.id);
+                        
+                        if (employeesInPosition.length > 0) {
+                            employeesInPosition.forEach(employee => {
+                                const shift = dayShifts.find(s => s.employeeId === employee.id);
+                                data.push(['', employee.name, shift ? shift.start : '-', shift ? shift.end : '-']);
+                            });
+                        } else {
+                            data.push(['', 'Нет сотрудников на этой должности', '', '']);
+                        }
+                        data.push([]); 
+                    });
+                    
+                    const ws = XLSX.utils.aoa_to_sheet(data);
+                    if (!ws['!cols']) ws['!cols'] = [];
+                    ws['!cols'][0] = { wch: 25 }; 
+                    ws['!cols'][1] = { wch: 30 }; 
+                    ws['!cols'][2] = { wch: 10 }; 
+                    ws['!cols'][3] = { wch: 10 }; 
+
+                    const range = XLSX.utils.decode_range(ws['!ref']);
+                    for (let R = range.s.r; R <= range.e.r; ++R) {
+                        for (let C = range.s.c; C <= range.e.c; ++C) {
+                            const cell_address = { c: C, r: R };
+                            const cell_ref = XLSX.utils.encode_cell(cell_address);
+                            if (!ws[cell_ref]) ws[cell_ref] = { t:'s', v:''}; 
+                            ws[cell_ref].s = { border: cellBorder };
+
+                            if (R === 0 || R === 1 || R ===3 ) { 
+                                ws[cell_ref].s.font = { bold: true };
+                                ws[cell_ref].s.fill = headerFill;
+                            }
+                            if (C === 0 && data[R] && config.positions.some(p => p.name === data[R][0]) && (data[R][1] === '' || data[R][1] === undefined)) { 
+                                 ws[cell_ref].s.font = { bold: true, sz: 12 };
+                                 const posColorHex = config.positions.find(p => p.name === data[R][0]).color.replace('#','');
+                                 ws[cell_ref].s.fill = { fgColor: { rgb: posColorHex + '4D' } }; 
+                                 if (!ws['!merges']) ws['!merges'] = [];
+                                 if (!ws['!merges'].some(m => m.s.r === R && m.s.c === 0 && m.e.c === 3)) {
+                                     ws['!merges'].push({ s: { r: R, c: 0 }, e: { r: R, c: 3 } });
+                                 }
+                            }
+                            if (R === 0 && C === 0) { 
+                                if (!ws['!merges']) ws['!merges'] = [];
+                                ws['!merges'].push({ s: { r: R, c: 0 }, e: { r: R, c: 3 } });
+                            }
+                            if (R === 1 && C === 0) { 
+                                 if (!ws['!merges']) ws['!merges'] = [];
+                                ws['!merges'].push({ s: { r: R, c: 0 }, e: { r: R, c: 3 } });
+                            }
+                        }
+                    }
+                     if(dayShifts.length === 0 && state.employees.length === 0) { 
+                        const noDataMessageRow = data.length;
+                        XLSX.utils.sheet_add_aoa(ws, [['Нет данных для отображения.', '', '', '']], {origin: -1}); 
+                        ws[XLSX.utils.encode_cell({r:noDataMessageRow, c:0})].s = {border: cellBorder, font: {italic: true}};
+                         if (!ws['!merges']) ws['!merges'] = [];
+                         ws['!merges'].push({ s: { r: noDataMessageRow, c: 0 }, e: { r: noDataMessageRow, c: 3 } });
+                    }
+
+                    XLSX.utils.book_append_sheet(wb, ws, config.shortDays[dayIndex]);
+                });
+
+                let summaryHeader = ['Должность', 'Сотрудник', ...config.days];
+                let summaryDataRows = [];
+
+                config.positions.forEach(position => {
+                    const employeesInPosition = state.employees.filter(emp => emp.positionId === position.id);
+                    if (employeesInPosition.length > 0) {
+                        summaryDataRows.push([position.name, '', ...Array(config.days.length).fill('')]); 
+                        employeesInPosition.forEach(employee => {
+                            const employeeRow = ['', employee.name];
+                            config.days.forEach((_dayName, dayIdx) => {
+                                const shift = state.shifts.find(s => 
+                                    s.employeeId === employee.id &&
+                                    s.weekNumber === state.currentWeek.weekNumber &&
+                                    s.year === state.currentWeek.year &&
+                                    s.dayIndex === dayIdx
+                                );
+                                employeeRow.push(shift ? `${shift.start}-${shift.end}` : '-');
+                            });
+                            summaryDataRows.push(employeeRow);
+                        });
+                         summaryDataRows.push([]); 
+                    }
+                });
+                
+                const fullSummarySheetData = [
+                    ['Общее расписание на неделю'],
+                    [`Неделя ${state.currentWeek.weekNumber} (${formatDate(state.currentWeek.start)} - ${formatDate(state.currentWeek.end)})`],
+                    [],
+                    summaryHeader,
+                    ...summaryDataRows
+                ];
+                
+                const summaryWs = XLSX.utils.aoa_to_sheet(fullSummarySheetData);
+                 if (!summaryWs['!cols']) summaryWs['!cols'] = [];
+                summaryWs['!cols'][0] = { wch: 25 }; 
+                summaryWs['!cols'][1] = { wch: 30 }; 
+                for (let i = 0; i < config.days.length; i++) {
+                    summaryWs['!cols'][i + 2] = { wch: 15 }; 
+                }
+
+                const summaryRange = XLSX.utils.decode_range(summaryWs['!ref']);
+                for (let R = summaryRange.s.r; R <= summaryRange.e.r; ++R) {
+                    for (let C = summaryRange.s.c; C <= summaryRange.e.c ; ++C) { 
+                         const cell_address = { c: C, r: R };
+                         const cell_ref = XLSX.utils.encode_cell(cell_address);
+                         if (!summaryWs[cell_ref]) summaryWs[cell_ref] = { t:'s', v:''};
+                         summaryWs[cell_ref].s = { border: cellBorder };
+
+                        if (R === 0 || R === 1 || R === 3) { 
+                            summaryWs[cell_ref].s.font = { bold: true, sz: (R === 0 ? 14 : 12) };
+                            summaryWs[cell_ref].s.fill = headerFill;
+                            if (R === 0 || R === 1) { 
+                                if (!summaryWs['!merges']) summaryWs['!merges'] = [];
+                                if (!summaryWs['!merges'].some(m => m.s.r === R && m.s.c === 0 && m.e.c === summaryHeader.length -1)) {
+                                    summaryWs['!merges'].push({ s: { r: R, c: 0 }, e: { r: R, c: summaryHeader.length - 1 } });
+                                }
+                            }
+                        }
+                        
+                        if (C === 0 && fullSummarySheetData[R] && config.positions.some(p => p.name === fullSummarySheetData[R][0]) && (fullSummarySheetData[R][1] === '' || fullSummarySheetData[R][1] === undefined)) {
+                             summaryWs[cell_ref].s.font = { bold: true, sz: 12 };
+                             const posColorHex = config.positions.find(p => p.name === fullSummarySheetData[R][0]).color.replace('#','');
+                             summaryWs[cell_ref].s.fill = { fgColor: { rgb: posColorHex + '4D' } };
+                             if (!summaryWs['!merges']) summaryWs['!merges'] = [];
+                              if (!summaryWs['!merges'].some(m => m.s.r === R && m.s.c === 0 && m.e.c === summaryHeader.length -1 )) { 
+                                 summaryWs['!merges'].push({ s: { r: R, c: 0 }, e: { r: R, c: summaryHeader.length - 1 } });
+                              }
+                        }
+                    }
+                }
+                XLSX.utils.book_append_sheet(wb, summaryWs, "Обзор недели");
+                
+                const restaurantNameForFile = state.currentRestaurantId ? config.restaurants[state.currentRestaurantId].name.replace(/[^a-zA-Z0-9а-яА-Я]/g, '_') : "UnknownRestaurant";
+                const fileName = `Расписание_BK_${restaurantNameForFile}_Неделя_${state.currentWeek.weekNumber}_${state.currentWeek.year}.xlsx`;
+                XLSX.writeFile(wb, fileName);
+            }
+
+
+            function generateId() {
+                return Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+            }
+
+            function getCurrentWeek() {
+                const now = new Date();
+                const dayOfWeek = now.getDay() === 0 ? 6 : now.getDay() - 1; 
+                const start = new Date(now);
+                start.setDate(now.getDate() - dayOfWeek);
+                start.setHours(0, 0, 0, 0);
+                
+                const end = new Date(start);
+                end.setDate(start.getDate() + 6);
+                end.setHours(23, 59, 59, 999);
+                
+                return { start, end, weekNumber: getWeekOfYear(start), year: start.getFullYear() };
+            }
+
+            function getPreviousWeek(currentWeekStartDate) {
+                const start = new Date(currentWeekStartDate);
+                start.setDate(start.getDate() - 7);
+                const end = new Date(start);
+                end.setDate(start.getDate() + 6);
+                end.setHours(23, 59, 59, 999);
+                return { start, end, weekNumber: getWeekOfYear(start), year: start.getFullYear() };
+            }
+
+            function getNextWeek(currentWeekStartDate) {
+                const start = new Date(currentWeekStartDate);
+                start.setDate(start.getDate() + 7);
+                const end = new Date(start);
+                end.setDate(start.getDate() + 6);
+                end.setHours(23, 59, 59, 999);
+                return { start, end, weekNumber: getWeekOfYear(start), year: start.getFullYear() };
+            }
+
+            function getWeekOfYear(date) {
+                const target = new Date(date.valueOf());
+                const dayNr = (date.getDay() + 6) % 7;
+                target.setDate(target.getDate() - dayNr + 3);
+                const firstThursday = target.valueOf();
+                target.setMonth(0, 1);
+                if (target.getDay() !== 4) {
+                    target.setMonth(0, 1 + ((4 - target.getDay()) + 7) % 7);
+                }
+                return 1 + Math.ceil((firstThursday - target) / 604800000); 
+            }
+
+            function formatDate(dateObj) {
+                const date = (typeof dateObj === 'string') ? new Date(dateObj) : dateObj;
+                return date.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            }
+
+            function getDateForDayIndex(week, dayIndex) { 
+                const date = (typeof week.start === 'string') ? new Date(week.start) : week.start;
+                const resultDate = new Date(date);
+                resultDate.setDate(date.getDate() + dayIndex);
+                return resultDate;
+            }
+        });
+    </script>
+</body>
+</html>
